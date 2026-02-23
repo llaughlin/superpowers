@@ -12,6 +12,17 @@ Task tool (general-purpose):
 
     [FULL TEXT of task from plan - paste it here, don't make subagent read file]
 
+    ## Scope Boundary — Strict
+
+    You MAY only modify these files (list every file explicitly):
+    - [file1]
+    - [file2]
+    - [file3]
+
+    You MUST NOT touch any other file, even if you notice it needs updating.
+    If you find a problem outside your scope, note it in your final report and
+    move on. Do NOT fix it. Scope violations will cause your session to be killed.
+
     ## Context
 
     [Scene-setting: where this fits, dependencies, architectural context]

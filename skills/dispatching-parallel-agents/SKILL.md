@@ -82,11 +82,22 @@ When agents return:
 ## Agent Prompt Structure
 
 Good agent prompts are:
-1. **Focused** - One clear problem domain
-2. **Self-contained** - All context needed to understand the problem
-3. **Specific about output** - What should the agent return?
+1. **Scoped first** - Role declaration and file boundary before any task content
+2. **Focused** - One clear problem domain
+3. **Self-contained** - All context needed to understand the problem
+4. **Specific about output** - What should the agent return?
 
+### Implementer Template
 ```markdown
+## Scope Boundary — Strict
+You MAY only modify these files:
+- src/agents/agent-tool-abort.test.ts
+
+Do NOT touch any other file. If you notice other issues, note them in your
+report and move on. Do NOT fix them.
+
+---
+
 Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
 
 1. "should abort tool with partial output capture" - expects 'interrupted at' in message
@@ -107,6 +118,19 @@ Do NOT just increase timeouts - find the real issue.
 Return: Summary of what you found and what you fixed.
 ```
 
+### Read-Only Reviewer Template
+```markdown
+## ⚠️ READ-ONLY AGENT — DO NOT MODIFY ANY FILES
+You MUST NOT write, edit, create, or delete any file. Your only output is a
+text report. Any file modification means you have failed your task.
+
+---
+
+[Review task description here]
+
+Return: [Specific report format]
+```
+
 ## Common Mistakes
 
 **❌ Too broad:** "Fix all the tests" - agent gets lost
@@ -115,8 +139,11 @@ Return: Summary of what you found and what you fixed.
 **❌ No context:** "Fix the race condition" - agent doesn't know where
 **✅ Context:** Paste the error messages and test names
 
-**❌ No constraints:** Agent might refactor everything
-**✅ Constraints:** "Do NOT change production code" or "Fix tests only"
+**❌ No scope fence:** Agent refactors everything it notices
+**✅ Scope fence:** Explicit list of allowed files at the top of the prompt
+
+**❌ No read-only constraint on reviewers:** Reviewer edits the files it's auditing
+**✅ Read-only header:** "⚠️ READ-ONLY AGENT" before any other content
 
 **❌ Vague output:** "Fix it" - you don't know what changed
 **✅ Specific:** "Return summary of root cause and changes"

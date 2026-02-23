@@ -196,6 +196,53 @@ Done!
 - Review loops add iterations
 - But catches issues early (cheaper than debugging later)
 
+## Session Lifecycle — Overlay Management
+
+Pi allows only **one interactive_shell overlay at a time**. A dispatched session
+holds the slot until explicitly killed — even after its work is done. Failing to
+manage this causes unnecessary kills of healthy sessions.
+
+**Rules:**
+1. **Confirm completion** by querying the session and verifying the output shows
+   success (tests pass, commit made, etc.)
+2. **Kill immediately** after confirming, before dispatching the next session:
+   ```
+   interactive_shell({ sessionId: "session-name", kill: true })
+   ```
+3. **Then dispatch** the next session.
+4. **Never assume** a session released its slot — always kill explicitly.
+
+**Alternative:** Use `autoExitOnQuiet: true` for fire-and-forget subagents so the
+overlay releases automatically when output stops:
+```
+interactive_shell({
+  command: "pi \"...task...\"",
+  mode: "dispatch",
+  handsFree: { autoExitOnQuiet: true, quietThreshold: 10000 }
+})
+```
+
+## Prompt Quality — Scope Fences and Role Constraints
+
+Two bugs cause most subagent misbehavior:
+
+**1. Missing read-only constraint on reviewers.** Without an explicit prohibition,
+reviewer agents will edit files they were asked to evaluate. Always open reviewer
+prompts with:
+```
+## ⚠️ READ-ONLY AGENT — DO NOT MODIFY ANY FILES
+```
+
+**2. Missing scope fence on implementers.** Without explicit file boundaries, agents
+will fix anything they notice — including work belonging to other tasks or agents.
+Always open implementer prompts with an explicit list of allowed files and a
+statement that anything outside that list must be noted, not touched.
+
+**3. Ambiguous "spec" language.** In reviewer prompts, "spec compliance" is easily
+misread as "update the spec documents." Use "task requirements" instead, and
+explicitly state: *"'Spec' means the task requirements listed below — not
+documentation files like PLAN.md or FRD.md."*
+
 ## Red Flags
 
 **Never:**
@@ -211,6 +258,9 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
+- Leave a completed session alive when about to open a new one (overlay collision)
+- Use vague "spec" language in reviewer prompts (say "task requirements" instead)
+- Omit a scope fence from implementer prompts (agents will wander)
 
 **If subagent asks questions:**
 - Answer clearly and completely
